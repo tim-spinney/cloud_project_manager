@@ -7,6 +7,7 @@
 - Title
 - Description
 - Status
+- Estimate
 - Created at and last modified timestamps
 
 ### Relationships
