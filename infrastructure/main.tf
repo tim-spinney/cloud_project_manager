@@ -17,18 +17,13 @@ provider "aws" {
   region = var.aws_region
 }
 
-data "aws_ami" "amazon_linux" {
+data "aws_ami" "amazon_linux_js_server" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["self"]
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-arm64"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    values = ["amazon-linux-js-server"]
   }
 }
 

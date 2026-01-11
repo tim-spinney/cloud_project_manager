@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS region for resources"
   type        = string
-  default     = "us-west-2"
+  default     = "us-east-1"
 }
 
 variable "environment" {
@@ -35,7 +35,13 @@ variable "key_pair_name" {
 }
 
 variable "iam_instance_profile_name" {
-  description = "Name of the IAM instance profile to use for EC2 instances (defaults to 'vocrole')"
+  description = "Name of the IAM instance profile to use for EC2 instances"
   type        = string
-  default     = "vocrole"
+  default     = "LabInstanceProfile"
+}
+
+variable "ec2_key_pair" {
+  description = "Name of the key pair to use for SSH access to EC2 instances"
+  type        = string
+  default     = "vockey"
 }

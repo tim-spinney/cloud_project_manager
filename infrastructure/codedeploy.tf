@@ -8,7 +8,7 @@ resource "aws_codedeploy_app" "tasks_service" {
 resource "aws_codedeploy_deployment_group" "tasks_service" {
   app_name              = aws_codedeploy_app.tasks_service.name
   deployment_group_name = "${local.name_prefix}-tasks-service-dg"
-  service_role_arn      = data.aws_iam_role.vocrole.arn
+  service_role_arn      = data.aws_iam_role.LabRole.arn
 
   ec2_tag_filter {
     key   = "Name"
