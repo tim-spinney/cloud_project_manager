@@ -1,0 +1,2 @@
+"""Routes for projects service"""
+
