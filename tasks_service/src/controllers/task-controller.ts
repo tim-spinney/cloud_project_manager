@@ -40,7 +40,7 @@ export class TaskController {
     }
   };
 
-  getByProject = async (req: Request, res: Response): Promise<void> => {
+  list = async (req: Request, res: Response): Promise<void> => {
     try {
       const { projectId } = projectIdQuerySchema.parse(req.query);
       

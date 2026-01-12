@@ -13,7 +13,7 @@ export function createTaskRoutes(taskController: TaskController): Router {
   const router = Router();
 
   router.post('/', validate(createTaskSchema), taskController.create);
-  router.get('/', validateQuery(projectIdQuerySchema), taskController.getByProject);
+  router.get('/', validateQuery(projectIdQuerySchema), taskController.list);
   router.post('/:id/links', validateParams(taskIdParamSchema), validate(linkTasksSchema), taskController.linkTasks);
   router.get('/:id/links', validateParams(taskIdParamSchema), taskController.getTaskLinks);
   router.get('/:id', validateParams(taskIdParamSchema), taskController.getById);

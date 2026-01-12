@@ -7,7 +7,12 @@
     "build": "tsc",
     "start": "bun src/index.ts",
     "dev": "bun --watch src/index.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov --coverage-reporter=text",
+    "coverage:html": "genhtml coverage/lcov.info -o coverage_report",
+    "coverage": "bun run test:coverage && bun run coverage:html"
   },
   "keywords": [],
   "author": "",
