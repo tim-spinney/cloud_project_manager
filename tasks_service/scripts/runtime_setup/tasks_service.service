@@ -1,0 +1,14 @@
+[Unit]
+Description=Tasks Service
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/opt/tasks-service
+ExecStart=/home/ec2-user/.bun/bin/bun src/index.ts
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
