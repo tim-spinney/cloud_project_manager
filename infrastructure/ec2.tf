@@ -14,4 +14,8 @@ resource "aws_instance" "tasks_service" {
   lifecycle {
     create_before_destroy = true
   }
+
+  user_data = templatefile("${path.module}/user_data.sh.tftpl", {
+    region = var.aws_region
+  })
 }

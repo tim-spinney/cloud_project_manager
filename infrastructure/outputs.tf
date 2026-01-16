@@ -32,3 +32,8 @@ output "service_url" {
   description = "URL to access the tasks service"
   value       = "http://${aws_instance.tasks_service.public_dns}:3000"
 }
+
+output "aws_region" {
+  description = "AWS region"
+  value       = var.aws_region
+}
