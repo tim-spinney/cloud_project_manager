@@ -6,6 +6,7 @@ import {
   linkTasksSchema,
   taskIdParamSchema,
   projectIdQuerySchema,
+  paginationQuerySchema,
 } from '../types/schemas';
 
 export class TaskController {
@@ -43,14 +44,14 @@ export class TaskController {
   list = async (req: Request, res: Response): Promise<void> => {
     try {
       const { projectId } = projectIdQuerySchema.parse(req.query);
+      const pagination = paginationQuerySchema.parse(req.query);
       
-      if (projectId) {
-        const tasks = await this.taskRepository.findByProjectId(projectId);
-        res.json(tasks);
-      } else {
-        const tasks = await this.taskRepository.findAll();
-        res.json(tasks);
-      }
+      const result = await this.taskRepository.findByProjectId(projectId, {
+        limit: pagination.limit,
+        pageToken: pagination.pageToken,
+      });
+      
+      res.json(result);
     } catch (error) {
       res.status(400).json({ error: 'Invalid request', details: error });
     }
@@ -130,8 +131,14 @@ export class TaskController {
   getTaskLinks = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = taskIdParamSchema.parse(req.params);
-      const links = await this.taskLinkRepository.findByTaskId(id);
-      res.json(links);
+      const pagination = paginationQuerySchema.parse(req.query);
+      
+      const result = await this.taskLinkRepository.findByTaskId(id, {
+        limit: pagination.limit,
+        pageToken: pagination.pageToken,
+      });
+      
+      res.json(result);
     } catch (error) {
       res.status(400).json({ error: 'Invalid request', details: error });
     }

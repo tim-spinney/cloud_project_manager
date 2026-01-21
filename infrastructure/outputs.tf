@@ -37,3 +37,18 @@ output "aws_region" {
   description = "AWS region"
   value       = var.aws_region
 }
+
+output "tasks_table_name" {
+  description = "Name of the DynamoDB tasks table"
+  value       = aws_dynamodb_table.tasks.name
+}
+
+output "task_links_table_name" {
+  description = "Name of the DynamoDB task links table"
+  value       = aws_dynamodb_table.task_links.name
+}
+
+output "comments_table_name" {
+  description = "Name of the DynamoDB comments table"
+  value       = aws_dynamodb_table.comments.name
+}

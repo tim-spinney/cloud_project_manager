@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ICommentRepository } from '../repositories/interfaces';
-import { createCommentSchema, taskIdParamSchema } from '../types/schemas';
+import { createCommentSchema, taskIdParamSchema, paginationQuerySchema } from '../types/schemas';
 
 export class CommentController {
   constructor(private commentRepository: ICommentRepository) {}
@@ -18,8 +18,14 @@ export class CommentController {
   getByTaskId = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = taskIdParamSchema.parse(req.params);
-      const comments = await this.commentRepository.findByTaskId(id);
-      res.json(comments);
+      const pagination = paginationQuerySchema.parse(req.query);
+      
+      const result = await this.commentRepository.findByTaskId(id, {
+        limit: pagination.limit,
+        pageToken: pagination.pageToken,
+      });
+      
+      res.json(result);
     } catch (error) {
       res.status(400).json({ error: 'Invalid request', details: error });
     }

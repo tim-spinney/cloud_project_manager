@@ -1,5 +1,6 @@
 import { Task } from '../types/entities';
-import { ITaskRepository } from './interfaces';
+import { ITaskRepository, PaginatedResult, PaginationOptions } from './interfaces';
+import { decodePageToken, encodePageToken } from './pagination-utils';
 
 export class InMemoryTaskRepository implements ITaskRepository {
   private tasks: Map<string, Task> = new Map();
@@ -22,8 +23,35 @@ export class InMemoryTaskRepository implements ITaskRepository {
     return this.tasks.get(id) || null;
   }
 
-  async findByProjectId(projectId: string): Promise<Task[]> {
-    return Array.from(this.tasks.values()).filter(task => task.projectId === projectId);
+  async findByProjectId(projectId: string, options?: PaginationOptions): Promise<PaginatedResult<Task>> {
+    const allTasks = Array.from(this.tasks.values()).filter(task => task.projectId === projectId);
+    
+    const limit = Math.min(Math.max(options?.limit || 20, 1), 100);
+    
+    // Find starting position based on pageToken
+    let startIndex = 0;
+    if (options?.pageToken) {
+      const decodedToken = decodePageToken(options.pageToken);
+      if (decodedToken?.id) {
+        const tokenIndex = allTasks.findIndex(task => task.id === decodedToken.id);
+        if (tokenIndex >= 0) {
+          startIndex = tokenIndex + 1; // Start after the token item
+        }
+      }
+    }
+    
+    const items = allTasks.slice(startIndex, startIndex + limit);
+    const hasMore = allTasks.length > startIndex + limit;
+    
+    // Use the last item's ID as the next page token
+    const nextPageToken = hasMore && items.length > 0
+      ? encodePageToken({ id: items[items.length - 1].id })
+      : undefined;
+    
+    return {
+      items,
+      nextPageToken,
+    };
   }
 
   async update(
@@ -48,8 +76,5 @@ export class InMemoryTaskRepository implements ITaskRepository {
     return this.tasks.delete(id);
   }
 
-  async findAll(): Promise<Task[]> {
-    return Array.from(this.tasks.values());
-  }
 }
 

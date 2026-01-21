@@ -7,15 +7,16 @@ import {
   linkTasksSchema,
   taskIdParamSchema,
   projectIdQuerySchema,
+  paginationQuerySchema,
 } from '../types/schemas';
 
 export function createTaskRoutes(taskController: TaskController): Router {
   const router = Router();
 
   router.post('/', validate(createTaskSchema), taskController.create);
-  router.get('/', validateQuery(projectIdQuerySchema), taskController.list);
+  router.get('/', validateQuery(projectIdQuerySchema.merge(paginationQuerySchema)), taskController.list);
   router.post('/:id/links', validateParams(taskIdParamSchema), validate(linkTasksSchema), taskController.linkTasks);
-  router.get('/:id/links', validateParams(taskIdParamSchema), taskController.getTaskLinks);
+  router.get('/:id/links', validateParams(taskIdParamSchema), validateQuery(paginationQuerySchema), taskController.getTaskLinks);
   router.get('/:id', validateParams(taskIdParamSchema), taskController.getById);
   router.patch('/:id', validateParams(taskIdParamSchema), validate(updateTaskSchema), taskController.update);
   router.delete('/:id', validateParams(taskIdParamSchema), taskController.delete);

@@ -33,6 +33,11 @@ export const taskIdParamSchema = z.object({
 });
 
 export const projectIdQuerySchema = z.object({
-  projectId: z.string().min(1).optional(),
+  projectId: z.string().min(1),
+});
+
+export const paginationQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  pageToken: z.string().optional(),
 });
 
