@@ -1,0 +1,488 @@
+openapi: 3.0.0
+
+info:
+  title: Tasks Service API
+  description: |
+    REST API for managing tasks, task links, and comments. Derived from the service implementation.
+    The global error handler returns 500 with `{ error, message }` for unhandled errors.
+  version: 1.0.0
+  # TODO: Add contact, license if needed for 3rd party clients
+
+servers:
+  # TODO: Replace with actual base URL(s) when deploying (e.g. https://api.example.com)
+  - url: /
+    description: Application root (tasks and comments under /api; health at root)
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/tasks:
+    post:
+      summary: Create a task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Validation failed or failed to create task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: List tasks by project
+      operationId: listTasks
+      parameters:
+        - $ref: '#/components/parameters/ProjectIdQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/PageTokenQuery'
+      responses:
+        '200':
+          description: Paginated list of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tasks/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TaskIdPath'
+    get:
+      summary: Get a task by ID
+      operationId: getTaskById
+      responses:
+        '200':
+          description: Task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a task
+      operationId: updateTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Validation failed or failed to update task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a task
+      operationId: deleteTask
+      responses:
+        '204':
+          description: Task deleted
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tasks/{id}/links:
+    parameters:
+      - $ref: '#/components/parameters/TaskIdPath'
+    post:
+      summary: Create a link from this task to another task
+      operationId: linkTasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkTasksRequest'
+      responses:
+        '201':
+          description: Link created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskLink'
+        '400':
+          description: Validation failed or failed to link tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: From task or to task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: List links for a task
+      operationId: getTaskLinks
+      parameters:
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/PageTokenQuery'
+      responses:
+        '200':
+          description: Paginated list of task links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskLinkListResponse'
+        '400':
+          description: Invalid request or query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/comments:
+    post:
+      summary: Create a comment
+      operationId: createComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Validation failed or failed to create comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/comments/task/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TaskIdPath'
+    get:
+      summary: List comments for a task
+      operationId: getCommentsByTaskId
+      parameters:
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/PageTokenQuery'
+      responses:
+        '200':
+          description: Paginated list of comments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentListResponse'
+        '400':
+          description: Invalid request or query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    TaskIdPath:
+      name: id
+      in: path
+      required: true
+      description: Task ID
+      schema:
+        type: string
+        minLength: 1
+    ProjectIdQuery:
+      name: projectId
+      in: query
+      required: true
+      description: Filter tasks by project ID
+      schema:
+        type: string
+        minLength: 1
+    LimitQuery:
+      name: limit
+      in: query
+      required: false
+      description: Maximum number of items to return (1-100). Default 20 per implementation.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    PageTokenQuery:
+      name: pageToken
+      in: query
+      required: false
+      description: Opaque token for the next page of results
+      schema:
+        type: string
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: ok
+
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - projectId
+        - createdAt
+        - lastModifiedAt
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          # TODO: Document allowed values if the service constrains status (e.g. open, in_progress, done)
+        estimate:
+          type: number
+          minimum: 0
+        projectId:
+          type: string
+        assigneeId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp (as serialized by JSON)
+        lastModifiedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp (as serialized by JSON)
+
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+        - projectId
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          default: ''
+        status:
+          type: string
+          # TODO: Document allowed values if constrained
+        estimate:
+          type: number
+          minimum: 0
+        projectId:
+          type: string
+          minLength: 1
+        assigneeId:
+          type: string
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+        estimate:
+          type: number
+          minimum: 0
+          nullable: true
+        assigneeId:
+          type: string
+          nullable: true
+      # All fields optional; implementation accepts partial updates
+
+    TaskLink:
+      type: object
+      required:
+        - id
+        - fromTaskId
+        - toTaskId
+        - descriptor
+        - createdAt
+      properties:
+        id:
+          type: string
+        fromTaskId:
+          type: string
+        toTaskId:
+          type: string
+        descriptor:
+          type: string
+          # TODO: Document semantics or allowed values if standardized (e.g. blocks, relates-to)
+        createdAt:
+          type: string
+          format: date-time
+
+    LinkTasksRequest:
+      type: object
+      required:
+        - toTaskId
+        - descriptor
+      properties:
+        toTaskId:
+          type: string
+          minLength: 1
+        descriptor:
+          type: string
+
+    Comment:
+      type: object
+      required:
+        - id
+        - taskId
+        - authorId
+        - text
+        - createdAt
+      properties:
+        id:
+          type: string
+        taskId:
+          type: string
+        authorId:
+          type: string
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateCommentRequest:
+      type: object
+      required:
+        - taskId
+        - authorId
+        - text
+      properties:
+        taskId:
+          type: string
+          minLength: 1
+        authorId:
+          type: string
+          minLength: 1
+        text:
+          type: string
+          minLength: 1
+
+    TaskListResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        nextPageToken:
+          type: string
+          description: Present when more results are available
+
+    TaskLinkListResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskLink'
+        nextPageToken:
+          type: string
+
+    CommentListResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        nextPageToken:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Short error message (e.g. "Task not found", "Validation failed")
+        message:
+          type: string
+          description: Present for 500 errors (from error handling middleware)
+        details:
+          description: Validation or other details (e.g. Zod errors); structure not fixed in implementation
+
+  # TODO: Add securitySchemes when authentication/authorization is implemented (none in current code)
+  # security: []
