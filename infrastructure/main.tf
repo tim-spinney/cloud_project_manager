@@ -17,16 +17,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-data "aws_ami" "amazon_linux_js_server" {
-  most_recent = true
-  owners      = ["self"]
-
-  filter {
-    name   = "name"
-    values = ["amazon-linux-js-server"]
-  }
-}
-
 locals {
   name_prefix = "${var.project_name}-${var.environment}"
   common_tags = {
