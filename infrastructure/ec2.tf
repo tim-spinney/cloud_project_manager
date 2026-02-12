@@ -1,5 +1,5 @@
 resource "aws_instance" "tasks_service" {
-  ami           = data.aws_ami.amazon_linux_js_server.id
+  ami           = "ami-02b86da1e539b4dd0"
   instance_type = var.instance_type
 
   iam_instance_profile   = data.aws_iam_instance_profile.LabInstanceProfile.name
