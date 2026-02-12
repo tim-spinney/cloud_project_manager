@@ -11,6 +11,8 @@ PACKAGE_NAME="tasks_service.zip"
 
 echo "Packaging application for deployment..."
 
+echo $INFRASTRUCTURE_DIR
+
 # Get S3 bucket name from Terraform output
 if [ ! -d "$INFRASTRUCTURE_DIR" ]; then
     echo "Error: Infrastructure directory not found at $INFRASTRUCTURE_DIR"

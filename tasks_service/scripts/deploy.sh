@@ -18,10 +18,15 @@ fi
 
 # Get Terraform outputs
 cd "$INFRASTRUCTURE_DIR"
-BUCKET_NAME=$(terraform output -raw s3_bucket_name 2>/dev/null || echo "")
-CODEDEPLOY_APP_NAME=$(terraform output -raw codedeploy_app_name 2>/dev/null || echo "")
-CODEDEPLOY_DG_NAME=$(terraform output -raw codedeploy_deployment_group_name 2>/dev/null || echo "")
-AWS_REGION=$(terraform output -raw aws_region 2>/dev/null || echo "")
+BUCKET_NAME=$(~/terraform output -raw s3_bucket_name 2>/dev/null || echo "")
+CODEDEPLOY_APP_NAME=$(~/terraform output -raw codedeploy_app_name 2>/dev/null || echo "")
+CODEDEPLOY_DG_NAME=$(~/terraform output -raw codedeploy_deployment_group_name 2>/dev/null || echo "")
+AWS_REGION=$(~/terraform output -raw aws_region 2>/dev/null || echo "")
+
+echo $BUCKET_NAME
+echo $CODEDEPLOY_APP_NAME
+echo $CODEDEPLOY_DG_NAME
+echo $AWS_REGION
 
 # Validate outputs
 if [ -z "$BUCKET_NAME" ] || [ -z "$CODEDEPLOY_APP_NAME" ] || [ -z "$CODEDEPLOY_DG_NAME" ]; then

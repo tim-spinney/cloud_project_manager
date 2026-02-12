@@ -11,6 +11,7 @@ export class DynamoDBTaskRepository implements ITaskRepository {
     const now = new Date();
     const newTask: Task = {
       ...task,
+      status: task.status || 'Open',
       id,
       createdAt: now,
       lastModifiedAt: now,
