@@ -33,3 +33,18 @@ variable "ec2_key_pair" {
   type        = string
   default     = "vockey"
 }
+
+variable "lab_role_arn" {
+  description = "ARN of the LabRole IAM role"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "ID of the VPC to deploy into"
+  type        = string
+}
+
+variable "default_subnet_id" {
+  description = "ID of the default subnet for the EC2 instance"
+  type        = string
+}

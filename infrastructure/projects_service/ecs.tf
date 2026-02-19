@@ -36,10 +36,10 @@ resource "aws_ecs_task_definition" "projects_service" {
   family                   = "${local.name_prefix}-projects-service"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"     # 1 vCPU
-  memory                   = "512"     # 2 GB (minimum for 1 vCPU in Fargate)
-  execution_role_arn       = data.aws_iam_role.LabRole.arn
-  task_role_arn            = data.aws_iam_role.LabRole.arn
+  cpu                      = "256"     # 1/4 vCPU
+  memory                   = "512"     # 1/2 GB
+  execution_role_arn       = var.lab_role_arn
+  task_role_arn            = var.lab_role_arn
 
   container_definitions = jsonencode([
     {
@@ -90,7 +90,7 @@ resource "aws_ecs_task_definition" "projects_service" {
 resource "aws_security_group" "projects_service_ecs" {
   name        = "${local.name_prefix}-projects-service-ecs"
   description = "Security group for projects service ECS tasks"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "Allow HTTP traffic on port 8000"
@@ -122,7 +122,7 @@ resource "aws_ecs_service" "projects_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = data.aws_subnets.default.ids
+    subnets          = var.subnet_ids
     security_groups  = [aws_security_group.projects_service_ecs.id]
     assign_public_ip = true
   }

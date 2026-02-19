@@ -1,7 +1,7 @@
 resource "aws_security_group" "tasks_service" {
   name        = "${local.name_prefix}-tasks-service-sg"
   description = "Security group for tasks service EC2 instance"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "HTTP"
@@ -30,19 +30,4 @@ resource "aws_security_group" "tasks_service" {
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-tasks-service-sg"
   })
-}
-
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-data "aws_subnet" "default" {
-  id = data.aws_subnets.default.ids[0]
 }

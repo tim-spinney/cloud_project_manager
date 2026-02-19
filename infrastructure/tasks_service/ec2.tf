@@ -1,10 +1,10 @@
 resource "aws_instance" "tasks_service" {
   ami           = "ami-02b86da1e539b4dd0"
-  instance_type = var.instance_type
+  instance_type = "t4g.micro"
 
-  iam_instance_profile   = data.aws_iam_instance_profile.LabInstanceProfile.name
+  iam_instance_profile   = var.iam_instance_profile_name
   vpc_security_group_ids = [aws_security_group.tasks_service.id]
-  subnet_id              = data.aws_subnet.default.id
+  subnet_id              = var.default_subnet_id
   key_name               = var.ec2_key_pair
 
   tags = merge(local.common_tags, {
