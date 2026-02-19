@@ -33,3 +33,9 @@ variable "ec2_key_pair" {
   type        = string
   default     = "vockey"
 }
+
+variable "docdb_master_password" {
+  description = "Master password for the projects service DocumentDB cluster"
+  type        = string
+  sensitive   = true
+}

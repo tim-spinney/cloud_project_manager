@@ -48,3 +48,15 @@ variable "subnet_ids" {
   description = "List of subnet IDs for the ECS service"
   type        = list(string)
 }
+
+variable "docdb_master_username" {
+  description = "Master username for the DocumentDB cluster"
+  type        = string
+  default     = "projectsadmin"
+}
+
+variable "docdb_master_password" {
+  description = "Master password for the DocumentDB cluster"
+  type        = string
+  sensitive   = true
+}

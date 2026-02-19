@@ -1,0 +1,26 @@
+services:
+  projects-service:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      MONGODB_URI: "mongodb://mongo:27017/projects_service"
+    depends_on:
+      mongo:
+        condition: service_started
+    networks:
+      - projects-net
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - projects-net
+
+networks:
+  projects-net:
+
+volumes:
+  mongo-data:

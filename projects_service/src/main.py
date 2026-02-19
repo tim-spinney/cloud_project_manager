@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from .repositories.interfaces import IProjectRepository
 from .repositories.in_memory_project_repository import InMemoryProjectRepository
 from .controllers.project_controller import ProjectController
 from .routes.project_routes import create_project_routes
@@ -10,8 +11,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Initialize repositories
-project_repository = InMemoryProjectRepository()
+# Initialize repositories — use MongoDB when a URI is provided, otherwise fall
+# back to the in-memory implementation for local development without a database.
+project_repository: IProjectRepository
+mongodb_uri = os.getenv("MONGODB_URI")
+if mongodb_uri:
+    from .repositories.mongo_project_repository import MongoProjectRepository
+    project_repository = MongoProjectRepository(mongodb_uri)
+else:
+    project_repository = InMemoryProjectRepository()
 
 # Initialize controllers
 project_controller = ProjectController(project_repository)

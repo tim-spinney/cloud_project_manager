@@ -68,6 +68,10 @@ resource "aws_ecs_task_definition" "projects_service" {
         {
           name  = "PORT"
           value = "8000"
+        },
+        {
+          name  = "MONGODB_URI"
+          value = "mongodb://${var.docdb_master_username}:${var.docdb_master_password}@${aws_docdb_cluster.projects.endpoint}:27017/projects_service?tls=true&tlsCAFile=/tmp/global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
         }
       ]
 

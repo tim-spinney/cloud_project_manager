@@ -29,6 +29,7 @@ module "projects_service" {
   lab_role_arn              = module.shared.lab_role_arn
   vpc_id                    = module.shared.vpc_id
   subnet_ids                = module.shared.subnet_ids
+  docdb_master_password     = var.docdb_master_password
 }
 
 module "tasks_service" {

@@ -32,3 +32,13 @@ output "cloudwatch_log_group_name" {
   description = "Name of the CloudWatch log group for ECS tasks"
   value       = aws_cloudwatch_log_group.projects_service.name
 }
+
+output "docdb_cluster_endpoint" {
+  description = "Endpoint of the DocumentDB cluster"
+  value       = aws_docdb_cluster.projects.endpoint
+}
+
+output "docdb_cluster_port" {
+  description = "Port of the DocumentDB cluster"
+  value       = aws_docdb_cluster.projects.port
+}
