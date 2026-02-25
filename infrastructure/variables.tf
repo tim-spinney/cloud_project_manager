@@ -16,10 +16,22 @@ variable "project_name" {
   default     = "cloud-project-manager"
 }
 
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t4g.micro"
+}
+
 variable "allowed_cidr_blocks" {
   description = "CIDR blocks allowed to access the EC2 instance"
   type        = list(string)
   default     = ["0.0.0.0/0"] # Restrict this in production
+}
+
+variable "key_pair_name" {
+  description = "Name of the AWS key pair for EC2 instance access"
+  type        = string
+  default     = ""
 }
 
 variable "iam_instance_profile_name" {
@@ -34,8 +46,8 @@ variable "ec2_key_pair" {
   default     = "vockey"
 }
 
-variable "docdb_master_password" {
-  description = "Master password for the projects service DocumentDB cluster"
-  type        = string
-  sensitive   = true
+variable "observability_log_retention_days" {
+  description = "CloudWatch log retention for service logs and EMF metric log group"
+  type        = number
+  default     = 14
 }

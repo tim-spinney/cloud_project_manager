@@ -9,6 +9,7 @@ This directory contains Terraform configuration for provisioning AWS infrastruct
 - **CodeDeploy Application**: Manages deployments to the EC2 instance
 - **IAM Roles**: Roles for EC2 instance and CodeDeploy service
 - **Security Group**: Allows HTTP (port 3000) and SSH (port 22) access
+- **CloudWatch Log Groups**: Dedicated groups for tasks logs, projects logs, and EMF metric ingestion
 
 ## Prerequisites
 
@@ -63,6 +64,16 @@ After applying, Terraform will output:
 - S3 bucket name for build artifacts
 - CodeDeploy application and deployment group names
 - Service URL
+- CloudWatch log group names for logs and metrics
+
+## Observability Notes
+
+- OpenTelemetry request/response metrics are exported by each service to a local AWS Distro for OpenTelemetry Collector endpoint (`127.0.0.1:4318`).
+- The collector pushes metrics to CloudWatch EMF in `/cloud-project-manager/metrics`.
+- Application logs are written to rotating files and tailed by the collector into:
+  - `/cloud-project-manager/tasks-service`
+  - `/cloud-project-manager/projects-service`
+- No CloudWatch alarms are created in Terraform yet; metric collection is intentionally baseline-only for SLA discovery.
 
 ## Deployment Process
 

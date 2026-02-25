@@ -1,51 +1,49 @@
 import express, { Express, Request, Response } from 'express';
-import path from 'path';
-import fs from 'fs';
-import dotenv from 'dotenv';
-import swaggerUi from 'swagger-ui-express';
-import { parse as parseYaml } from 'yaml';
 import { TaskController } from './controllers/task-controller';
 import { CommentController } from './controllers/comment-controller';
 import { createTaskRoutes } from './routes/task-routes';
 import { createCommentRoutes } from './routes/comment-routes';
-import { ITaskRepository, ITaskLinkRepository, ICommentRepository } from './repositories/interfaces';
 import { InMemoryTaskRepository } from './repositories/in-memory-task-repository';
 import { InMemoryTaskLinkRepository } from './repositories/in-memory-task-link-repository';
 import { InMemoryCommentRepository } from './repositories/in-memory-comment-repository';
-import { DynamoDBTaskRepository } from './repositories/dynamodb-task-repository';
-import { DynamoDBTaskLinkRepository } from './repositories/dynamodb-task-link-repository';
-import { DynamoDBCommentRepository } from './repositories/dynamodb-comment-repository';
-
-// Load environment variables
-dotenv.config();
-
-// ENABLE_SWAGGER_UI: set to 'true' or '1' to serve Swagger UI and OpenAPI spec; set to 'false' to disable (e.g. in production).
-const enableSwaggerUi = process.env.ENABLE_SWAGGER_UI !== 'false' && process.env.ENABLE_SWAGGER_UI !== '0';
+import { logger } from './logger';
+import { recordHttpRequest, shutdownMetrics } from './observability';
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use((req: Request, res: Response, next: express.NextFunction) => {
+  const startTime = process.hrtime.bigint();
 
-// Initialize repositories based on environment
-const useDynamoDB = process.env.USE_DYNAMODB === 'true' || process.env.USE_DYNAMODB === '1';
+  res.on('finish', () => {
+    const durationMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    const route = req.baseUrl + (req.route?.path ?? req.path);
+    const attributes = {
+      'http.method': req.method,
+      'http.route': route,
+      'http.status_code': res.statusCode,
+    };
 
-let taskRepository: ITaskRepository;
-let taskLinkRepository: ITaskLinkRepository;
-let commentRepository: ICommentRepository;
+    recordHttpRequest(attributes, durationMs);
+    logger.info('request_completed', {
+      method: req.method,
+      route,
+      statusCode: res.statusCode,
+      durationMs: Number(durationMs.toFixed(2)),
+      userAgent: req.get('user-agent') ?? '',
+      remoteAddress: req.ip,
+    });
+  });
 
-if (useDynamoDB) {
-  console.log('Using DynamoDB repositories');
-  taskRepository = new DynamoDBTaskRepository();
-  taskLinkRepository = new DynamoDBTaskLinkRepository();
-  commentRepository = new DynamoDBCommentRepository();
-} else {
-  console.log('Using in-memory repositories');
-  taskRepository = new InMemoryTaskRepository();
-  taskLinkRepository = new InMemoryTaskLinkRepository();
-  commentRepository = new InMemoryCommentRepository();
-}
+  next();
+});
+
+// Initialize repositories
+const taskRepository = new InMemoryTaskRepository();
+const taskLinkRepository = new InMemoryTaskLinkRepository();
+const commentRepository = new InMemoryCommentRepository();
 
 // Initialize controllers
 const taskController = new TaskController(taskRepository, taskLinkRepository);
@@ -60,26 +58,30 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-// API docs and Swagger UI (disabled when ENABLE_SWAGGER_UI is false, e.g. in production)
-if (enableSwaggerUi) {
-  const openApiPath = path.join(__dirname, '..', 'openapi.yaml');
-  const openApiSpec = parseYaml(fs.readFileSync(openApiPath, 'utf8'));
-  app.get('/api-docs/openapi.yaml', (_req: Request, res: Response) => {
-    res.type('application/yaml').send(fs.readFileSync(openApiPath, 'utf8'));
-  });
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
-}
-
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: express.NextFunction) => {
-  console.error('Error:', err);
+  logger.error('request_failed', {
+    message: err.message,
+    stack: err.stack,
+    method: req.method,
+    path: req.path,
+  });
   res.status(500).json({ error: 'Internal server error', message: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`Tasks service is running on port ${PORT}`);
-  if (enableSwaggerUi) {
-    console.log(`API docs: http://localhost:${PORT}/api-docs`);
-  }
+const server = app.listen(PORT, () => {
+  logger.info('service_started', { port: PORT });
 });
+
+async function shutdown(signal: NodeJS.Signals): Promise<void> {
+  logger.info('shutdown_signal_received', { signal });
+  server.close(async () => {
+    await shutdownMetrics();
+    logger.info('service_stopped');
+    process.exit(0);
+  });
+}
+
+process.on('SIGINT', () => void shutdown('SIGINT'));
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
 

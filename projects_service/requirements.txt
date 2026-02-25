@@ -2,5 +2,7 @@ fastapi==0.128.0
 uvicorn[standard]==0.40.0
 pydantic==2.12.5
 pydantic-settings==2.12.0
-pymongo==4.11.3
+opentelemetry-api==1.38.0
+opentelemetry-sdk==1.38.0
+opentelemetry-exporter-otlp-proto-http==1.38.0
 

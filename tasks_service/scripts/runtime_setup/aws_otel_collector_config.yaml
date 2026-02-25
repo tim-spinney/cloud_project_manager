@@ -1,0 +1,66 @@
+extensions:
+  health_check: {}
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 127.0.0.1:4317
+      http:
+        endpoint: 127.0.0.1:4318
+  filelog/tasks:
+    include:
+      - /var/log/cloud-project-manager/tasks-service*.log
+    start_at: end
+  filelog/projects:
+    include:
+      - /var/log/cloud-project-manager/projects-service*.log
+    start_at: end
+
+processors:
+  resource/tasks:
+    attributes:
+      - key: service.name
+        value: tasks-service
+        action: upsert
+  resource/projects:
+    attributes:
+      - key: service.name
+        value: projects-service
+        action: upsert
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+exporters:
+  awsemf:
+    region: ${AWS_REGION}
+    namespace: cloud-project-manager
+    log_group_name: /cloud-project-manager/metrics
+    dimension_rollup_option: NoDimensionRollup
+  awscloudwatchlogs/tasks:
+    region: ${AWS_REGION}
+    log_group_name: /cloud-project-manager/tasks-service
+    log_stream_name: tasks-service
+    raw_log: true
+  awscloudwatchlogs/projects:
+    region: ${AWS_REGION}
+    log_group_name: /cloud-project-manager/projects-service
+    log_stream_name: projects-service
+    raw_log: true
+
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [awsemf]
+    logs/tasks:
+      receivers: [filelog/tasks]
+      processors: [resource/tasks, batch]
+      exporters: [awscloudwatchlogs/tasks]
+    logs/projects:
+      receivers: [filelog/projects]
+      processors: [resource/projects, batch]
+      exporters: [awscloudwatchlogs/projects]

@@ -22,6 +22,22 @@ uvicorn src.main:app --reload
 
 The service will be available at `http://localhost:8000`
 
+### Observability Configuration
+
+The service now emits:
+
+- Rotating JSON logs (default directory: `./logs`)
+- OpenTelemetry request/response metrics (`http.server.request.count` and `http.server.request.duration`)
+
+Optional runtime environment variables:
+
+- `LOG_DIR` (default: `./logs`)
+- `LOG_LEVEL` (default: `INFO`)
+- `SERVICE_NAME` (default: `projects-service`)
+- `SERVICE_VERSION` (default: `1.0.0`)
+- `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` (default: `http://127.0.0.1:4318/v1/metrics`)
+- `OTEL_EXPORT_INTERVAL_MS` (default: `15000`)
+
 ## API Documentation
 
 Once the service is running, visit:
